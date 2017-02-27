@@ -67,6 +67,8 @@ for w in range(gray_image.shape[1]):
 cv2.line(bounded_image, (lowest_y, lowest_x), (lowest_rx, lowest_ry), (0, 255, 0), 2)
 
 cv2.imshow('Samarth Original Bounded Sign', bounded_image)
+cv2.imwrite('./test/LineInclinationImage.png', bounded_image)
+cv2.imwrite('./test/GrayScaleImage.png', gray_image)
 cv2.imshow('Samarth Grayscale Sign', gray_image)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
