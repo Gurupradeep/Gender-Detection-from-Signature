@@ -4,6 +4,7 @@ import cv2
 def find_largest_bounding_box_from_contours(contours):
     largest_bounding_x_start, largest_bounding_y_start = (100000, 100000)
     largest_bounding_x_end, largest_bounding_y_end = (0, 0)
+    # assuming that major foreground is always bigger in size than any unwanted backgrounds considered as foreground.
     for contour in contours:
         x, y, w, h = cv2.boundingRect(contour)
         if x < largest_bounding_x_start:
