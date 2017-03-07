@@ -1,8 +1,8 @@
 import cv2
-
+import matplotlib.pyplot as plt
 from common.image_helper import get_image_bounds
 
-THRESHOLD = 100
+THRESHOLD = 230
 MAX_VALUE = 255
 MIN_VALUE = 0
 
@@ -20,16 +20,48 @@ bounded_image = image[image_bounds[0][0]: image_bounds[1][0], image_bounds[0][1]
     Convert the image to a grayscale image with either 0 or 1 intensity.
 '''
 gray_image = cv2.cvtColor(bounded_image, cv2.COLOR_BGR2GRAY)
+x = dict()
+for w in range(gray_image.shape[1]):
+    for h in range(gray_image.shape[0]):
+        if x.has_key(gray_image[h][w]):
+            x[gray_image[h][w]] += 1
+        else:
+            x[gray_image[h][w]] = 1
+
+x_values_all = x.keys()
+x_values = []
+y_values = []
+for x_value in x_values_all:
+    if x_value <= 220:
+        x_values.append(x_value)
+        y_values.append(x[x_value])
+
+'''
+    Draw histogram of the intensity vs count of pixels.
+'''
+
+# todo: Calculating threshold value depending on the values of the intensity.
+
+plt.plot(x_values, y_values)
+plt.savefig('intensity_count.pdf')
+plt.show()
 '''
     MAX Value = 255 (White)
     Min Value = 0 (Black)
 '''
+
+# todo: Change the value of Threshold as calculated above.
+
+number_of_black_pixel = 0
 for w in range(gray_image.shape[1]):
     for h in range(gray_image.shape[0]):
         if gray_image[h][w] > THRESHOLD:
             gray_image[h][w] = MAX_VALUE
         else:
             gray_image[h][w] = MIN_VALUE
+            number_of_black_pixel += 1
+
+print "Number of Black Pixels after Gray-Scale threshold: " + str(number_of_black_pixel)
 
 '''
     Converting to grayscale makes it easier to work/tweak around images and apply heuristics.
@@ -45,7 +77,6 @@ for w in range(gray_image.shape[1]):
             if lowest_x < h:
                 lowest_x = h
                 lowest_y = w
-
 
 bounded_image[lowest_x, lowest_y:] = [0, 255, 0]
 
