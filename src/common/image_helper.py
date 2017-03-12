@@ -49,3 +49,9 @@ def get_image_bounds(image, h, w, contour_thickness=7, canny_th1=40, canny_th2=2
     bounds = [[y_start, x_start], [y_end, x_end]]
     return bounds
 
+
+def invert_grayscale_image(image):
+    for w in range(image.shape[1]):
+        for h in range(image.shape[0]):
+            image[h][w] = 255
+    return image

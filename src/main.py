@@ -1,6 +1,6 @@
 import cv2
 import matplotlib.pyplot as plt
-from common.image_helper import get_image_bounds
+from common.image_helper import get_image_bounds, invert_grayscale_image
 
 THRESHOLD = 230
 MAX_VALUE = 255
@@ -14,7 +14,7 @@ image = cv2.resize(image, None, fx=0.2, fy=0.2)
     Crop The Image using canny edge detection and contour formations. Use BilateralFiltering to remove the desired noises.
 '''
 image_bounds = get_image_bounds(image, image.shape[0], image.shape[1])
-bounded_image = image[image_bounds[0][0]: image_bounds[1][0], image_bounds[0][1]: image_bounds[1][1]]
+bounded_image = image[max(0, image_bounds[0][0] - 2): min(image.shape[1], image_bounds[1][0]+2) , max(image_bounds[0][1]-2, 0): min(image.shape[0], image_bounds[1][1]+2)]
 
 '''
     Convert the image to a grayscale image with either 0 or 1 intensity.
@@ -62,6 +62,32 @@ for w in range(gray_image.shape[1]):
             number_of_black_pixel += 1
 
 print "Number of Black Pixels after Gray-Scale threshold: " + str(number_of_black_pixel)
+
+
+'''
+    Measure of Writing movement.
+'''
+contours, hierarchy = cv2.findContours(gray_image.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+
+external_contours = []
+internal_contours = []
+# Imp: Count external and internal contours.
+for hierarchy_info in hierarchy[0]:
+    parent = hierarchy_info[3]
+    if parent == -1:
+        continue
+    elif parent == 0:
+        external_contours.append(parent)
+    else:
+        internal_contours.append(parent)
+
+print "Number of External Contours : %d, Internal Contours : %d" %(len(external_contours), len(internal_contours))
+
+bounded_image1 = bounded_image.copy()
+gray_image1 = invert_grayscale_image(gray_image.copy())
+cv2.drawContours(gray_image1, contours, -1, (0, 0, 0), 1)
+cv2.imshow('Contours', gray_image1)
 
 '''
     Converting to grayscale makes it easier to work/tweak around images and apply heuristics.
