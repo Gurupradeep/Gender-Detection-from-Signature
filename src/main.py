@@ -1,11 +1,13 @@
 import cv2
 import matplotlib.pyplot as plt
 from common.image_helper import get_image_bounds, invert_grayscale_image, get_max_length_dir, get_direction_count
+from constants.constants import THRESHOLD, MAX_VALUE, MIN_VALUE, MAX_LENGTH_DIRECTION_, NUMBER_PIXEL_DIRECTION_, \
+    SLOPE_ANGLE
+from helper.helper import get_external_and_internal_contours, get_slope_height_ratio, get_max_length_direction, \
+    image_direction_pixels
 
-THRESHOLD = 230
-MAX_VALUE = 255
-MIN_VALUE = 0
-Directions = [1, 2, 3, 4, 5, 6, 7, 8]
+FEATURE_LIST = []
+
 
 image = cv2.imread('./test/samarth.jpg')
 
@@ -15,7 +17,7 @@ image = cv2.resize(image, None, fx=0.2, fy=0.2)
     Crop The Image using canny edge detection and contour formations. Use BilateralFiltering to remove the desired noises.
 '''
 image_bounds = get_image_bounds(image, image.shape[0], image.shape[1])
-bounded_image = image[max(0, image_bounds[0][0] - 2): min(image.shape[1], image_bounds[1][0]+2) , max(image_bounds[0][1]-2, 0): min(image.shape[0], image_bounds[1][1]+2)]
+bounded_image = image[max(0, image_bounds[0][0] - 2): min(image.shape[1], image_bounds[1][0]+2), max(image_bounds[0][1] - 2, 0): min(image.shape[0], image_bounds[1][1]+2)]
 
 '''
     Convert the image to a grayscale image with either 0 or 1 intensity.
@@ -40,7 +42,6 @@ for x_value in x_values_all:
 '''
     Draw histogram of the intensity vs count of pixels.
 '''
-
 # todo: Calculating threshold value depending on the values of the intensity.
 
 plt.plot(x_values, y_values)
@@ -69,49 +70,27 @@ print "Number of Black Pixels after Gray-Scale threshold: " + str(number_of_blac
     Measure of Writing movement.
 '''
 contours, hierarchy = cv2.findContours(gray_image.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
-gray_image1 = invert_grayscale_image(gray_image.copy())
-cv2.drawContours(gray_image1, contours, -1, (0, 0, 0), 1)
-cv2.imshow('Contours', gray_image1)
-
-external_contours = []
-internal_contours = []
-# Imp: Count external and internal contours.
-for hierarchy_info in hierarchy[0]:
-    parent = hierarchy_info[3]
-    if parent == -1:
-        continue
-    elif parent == 0:
-        external_contours.append(parent)
-    else:
-        internal_contours.append(parent)
-
-print "Number of External Contours : %d, Internal Contours : %d" %(len(external_contours), len(internal_contours))
+external_contours_number, internal_contours_number = get_external_and_internal_contours(gray_image=gray_image)
+print "Number of External Contours : %d, Internal Contours : %d" %(external_contours_number, internal_contours_number)
 
 '''
     Height of the contours.
 '''
-contour_heights = []
-contour_widths = []
-for contour_index in range(len(contours)):
-    if hierarchy[0][contour_index][3] == -1:
-        continue
-    else:
-        min_height = 100000
-        max_height = 0
-        min_width = 100000
-        max_width = 0
-        for ctrs in contours[contour_index]:
-            ctrs_values = ctrs[0]
-            min_height = min(min_height, ctrs_values[0])
-            max_height = max(max_height, ctrs_values[0])
-            min_width = min(min_width, ctrs_values[1])
-            max_width = max(max_width, ctrs_values[1])
-        contour_heights.append(max_height - min_height)
-        contour_widths.append(max_width - min_width)
+
+contour_heights, contour_widths = get_slope_height_ratio(contours, hierarchy)
 
 print "heights : ", contour_heights
 print "widths : ", contour_widths
+
+max_height = max(contour_heights)
+min_height = min(contour_heights)
+
+max_width = max(contour_widths)
+min_width = min(contour_widths)
+
+# FEATURE :
+max_min_height_ratio = max_height*1.0/min_height
+max_min_width_ratio = max_width*1.0/min_width
 
 contours_slopes = []
 
@@ -121,52 +100,35 @@ contours_slopes = []
 for i in range(len(contour_widths)):
     contours_slopes.append(contour_heights[i]*1.0/contour_widths[i])
 
+# FEATURE:
 print "slopes : ", contours_slopes
 
 # todo : chose thresholds to fix negative,positive, vertical and horizontal slopes.
-
-bounded_image1 = bounded_image.copy()
-
 
 '''
     toruosity feature.
 '''
 
-max_length_each_direction = dict()
-for h in range(gray_image.shape[0]):
-    for w in range(gray_image.shape[1]):
-        if gray_image[h][w] == 0:
-            for direction in Directions:
-                length = get_max_length_dir(gray_image.copy(), direction, w, h)
-                if max_length_each_direction.has_key(direction):
-                    max_length_each_direction[direction] = max(max_length_each_direction[direction], length)
-                else:
-                    max_length_each_direction[direction] = length
-
-print max_length_each_direction
+max_length_each_direction = get_max_length_direction(gray_image=gray_image)
+max_length = max(max_length_each_direction.values())
+max_length_dict = dict()
+# FEATURE :
+for key in max_length_each_direction.keys():
+    max_length_dict[MAX_LENGTH_DIRECTION_ + str(key)] = max_length_each_direction[key]*1.0/max_length
 
 '''
     Edge directional Features.
 '''
 
-Image_direction_dict = dict()
-window_size = [1, 2, 3]
-for wnd_size in window_size:
-    for w in range(gray_image.shape[1]):
-        for h in range(gray_image.shape[0]):
-            if gray_image[h][w] == 0:
-                direction_count = dict()
-                direction_count = get_direction_count(gray_image.copy(), gray_image.shape[0], gray_image.shape[1], wnd_size, h, w)
-                for key in direction_count.keys():
-                    if Image_direction_dict.has_key(wnd_size):
-                        if Image_direction_dict[wnd_size].has_key(key):
-                            Image_direction_dict[wnd_size][key] += direction_count[key]
-                        else:
-                            Image_direction_dict[wnd_size][key] = direction_count[key]
-                    else:
-                        Image_direction_dict[wnd_size] = dict()
-
-print Image_direction_dict
+# FEATURES :
+image_direction_pixel_feature = dict()
+image_direction_dict = image_direction_pixels(gray_image)
+for key in image_direction_dict.keys():
+    FEATURE_NAME = NUMBER_PIXEL_DIRECTION_ + str(key)
+    wndw_length_sum = sum(image_direction_dict[key].values())
+    for key1 in image_direction_dict[key]:
+        FEATURE_NAME_APPENDED = FEATURE_NAME + str(key1)
+        image_direction_pixel_feature[FEATURE_NAME_APPENDED] = image_direction_dict[key][key1]*1.0/wndw_length_sum
 
 '''
     Converting to grayscale makes it easier to work/tweak around images and apply heuristics.
@@ -201,6 +163,9 @@ for w in range(gray_image.shape[1]):
     Join the end points to get the line. Calculate slope using this line equation.
 '''
 cv2.line(bounded_image, (lowest_y, lowest_x), (lowest_rx, lowest_ry), (0, 255, 0), 2)
+
+# Feature
+SLOPE_ANGLE = (lowest_rx - lowest_y)*1.0/(lowest_ry - lowest_x)
 
 cv2.imshow('Samarth Original Bounded Sign', bounded_image)
 cv2.imwrite('./test/LineInclinationImage.png', bounded_image)
