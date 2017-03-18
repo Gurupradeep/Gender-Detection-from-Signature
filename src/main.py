@@ -168,6 +168,38 @@ for wnd_size in window_size:
 
 print Image_direction_dict
 '''
+    toruosity feature.
+'''
+max_length_each_direction = dict()
+for h in range(gray_image.shape[0]):
+    for w in range(gray_image.shape[1]):
+        if gray_image[h][w] == 255:
+            for direction in Directions:
+                length = get_max_length_dir(gray_image1.copy(), direction, w, h)
+                if max_length_each_direction.has_key(direction):
+                    max_length_each_direction[direction] = max(max_length_each_direction[direction], length)
+                else:
+                    max_length_each_direction[direction] = length
+
+'''
+    Edge directional Features.
+'''
+
+Image_direction_dict = dict()
+window_size = [1, 2, 3]
+for w in gray_image.shape[1]:
+    for h in gray_image.shape[0]:
+        if gray_image[h][w] == 255:
+            direction_count = dict()
+            direction_count = get_direction_count(gray_image.copy(), gray_image.shape[0], gray_image.shape[1], 1, h, w)
+            for key in direction_count.keys():
+                if Image_direction_dict.has_key(key):
+                    Image_direction_dict[key] += direction_count[key]
+                else:
+                    Image_direction_dict[key] = direction_count[key]
+
+print Image_direction_dict
+'''
     Converting to grayscale makes it easier to work/tweak around images and apply heuristics.
 '''
 

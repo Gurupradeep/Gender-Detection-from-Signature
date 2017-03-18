@@ -53,7 +53,7 @@ def get_image_bounds(image, h, w, contour_thickness=7, canny_th1=40, canny_th2=2
 def invert_grayscale_image(image):
     for w in range(image.shape[1]):
         for h in range(image.shape[0]):
-            image[h][w] = 255
+            image[h][w] = 0
     return image
 
 
@@ -77,6 +77,8 @@ def get_max_length_dir(image, direction, w, h):
                 h -= 1
     elif direction == 4:
         while h >= 0 and w >= 0 and image[h, w] == 0:
+            if h < 0 or w < 0:
+                break
             if image[h, w] == 0:
                 length += 1
                 w -= 1
@@ -134,10 +136,10 @@ def get_direction_count(image, h, w, window_size, posH, posW):
             direction_count[6] = 1
 
     if image[max_h][max_w] == 0:
-        if direction_count.has_key(8):
-            direction_count[8] += 1
+        if direction_count.has_key(7):
+            direction_count[7] += 1
         else:
-            direction_count[8] = 1
+            direction_count[7] = 1
 
     for width in range(min_w-1, max_w):
         if image[min_h][width] == 0:
