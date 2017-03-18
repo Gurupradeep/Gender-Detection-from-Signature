@@ -1,10 +1,11 @@
 import cv2
 import matplotlib.pyplot as plt
-from common.image_helper import get_image_bounds, invert_grayscale_image
+from common.image_helper import get_image_bounds, invert_grayscale_image, get_max_length_dir, get_direction_count
 
 THRESHOLD = 230
 MAX_VALUE = 255
 MIN_VALUE = 0
+Directions = [1, 2, 3, 4, 5, 6, 7, 8]
 
 image = cv2.imread('./test/samarth.jpg')
 
@@ -84,11 +85,80 @@ for hierarchy_info in hierarchy[0]:
 
 print "Number of External Contours : %d, Internal Contours : %d" %(len(external_contours), len(internal_contours))
 
+'''
+    Height of the contours.
+'''
+contour_heights = []
+contour_widths = []
+for contour_index in range(len(contours)):
+    if hierarchy[0][contour_index][3] == -1:
+        continue
+    else:
+        min_height = 100000
+        max_height = 0
+        min_width = 100000
+        max_width = 0
+        for ctrs in contours[contour_index]:
+            ctrs = ctrs[0]
+            min_height = min(min_height, ctrs[0])
+            max_height = max(max_height, ctrs[0])
+            min_width = min(min_width, ctrs[1])
+            max_width = max(max_width, ctrs[1])
+        contour_heights.append(max_height - min_height)
+        contour_widths.append(max_width - min_width)
+
+print "heights : ", contour_heights
+print "widths : ", contour_widths
+
+contours_slopes = []
+
+'''
+    Slope using height/width
+'''
+for i in range(len(contour_widths)):
+    contours_slopes.append(contour_heights[i]/contour_widths[i])
+
+print "slopes : ", contours_slopes
+
+# todo : chose thresholds to fix negative,positive, vertical and horizontal slopes.
+
 bounded_image1 = bounded_image.copy()
 gray_image1 = invert_grayscale_image(gray_image.copy())
 cv2.drawContours(gray_image1, contours, -1, (0, 0, 0), 1)
 cv2.imshow('Contours', gray_image1)
 
+'''
+    toruosity feature.
+'''
+max_length_each_direction = dict()
+for h in range(gray_image.shape[0]):
+    for w in range(gray_image.shape[1]):
+        if gray_image[h][w] == 255:
+            for direction in Directions:
+                length = get_max_length_dir(gray_image1.copy(), direction, w, h)
+                if max_length_each_direction.has_key(direction):
+                    max_length_each_direction[direction] = max(max_length_each_direction[direction], length)
+                else:
+                    max_length_each_direction[direction] = length
+
+'''
+    Edge directional Features.
+'''
+
+Image_direction_dict = dict()
+window_size = [1, 2, 3]
+for w in gray_image.shape[1]:
+    for h in gray_image.shape[0]:
+        if gray_image[h][w] == 255:
+            direction_count = dict()
+            direction_count = get_direction_count(gray_image.copy(), gray_image.shape[0], gray_image.shape[1], 1, h, w)
+            for key in direction_count.keys():
+                if Image_direction_dict.has_key(key):
+                    Image_direction_dict[key] += direction_count[key]
+                else:
+                    Image_direction_dict[key] = direction_count[key]
+
+print Image_direction_dict
 '''
     Converting to grayscale makes it easier to work/tweak around images and apply heuristics.
 '''
