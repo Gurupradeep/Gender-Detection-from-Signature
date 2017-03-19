@@ -13,31 +13,32 @@ df = pd.read_csv('../../Dataset/dataset.csv', delimiter='\t')
 
 dataset = df.values
 
-mask = np.random.rand(len(df)) < 0.75
+mask = np.random.rand(len(df)) < .80
 
 train = df[mask]
-test = df[mask]
+test = df[~mask]
 
-X = []
-Y = []
+X = pd.DataFrame()
+Y = pd.DataFrame()
 
-for x in train:
-    X.append(x[2: len(x) - 1])
-    Y.append(x[len(x)-1])
+X = train.ix[:, 2:len(train.columns) - 1]
+Y = train.ix[:, len(train.columns) - 1: len(train.columns)]
 
-X_Test = []
-Y_Test = []
+X_Test = pd.DataFrame()
+Y_Test = pd.DataFrame()
 
-for x_test in test:
-    X_Test.append(x_test[2: len(x_test) - 1])
-    Y_Test.append(x_test[len(x_test) - 1])
+X_Test = test.ix[:, 2:len(test.columns) - 1]
+Y_Test = test.ix[:, len(test.columns) - 1: len(test.columns)]
+
+print "Training Data Set Size : ", str(len(X))
+print "Testing Data Set Size : ", str(len(X_Test))
 
 # tune parameters here.
-bdt = AdaBoostClassifier(DecisionTreeClassifier(max_depth=1), algorithm="SAMME", n_estimators=200)
+bdt = AdaBoostClassifier(DecisionTreeClassifier(max_depth=1), n_estimators=200)
 
 bdt.fit(X, Y)
 
 # predict
 Y_Result = bdt.predict(X_Test)
 
-precision_recall_fscore_support(Y_Test, Y_Result, average='micro')
+print precision_recall_fscore_support(Y_Test, Y_Result, average='micro')

@@ -40,7 +40,10 @@ for root, dirs, filename in os.walk(input_source):
                 else:
                     data.append(0)
         # add gender.
-        data.append(0)
+        if "boy" in f:
+            data.append(0)
+        else:
+            data.append(1)
         df.loc[len(df)] = data
         print df
         df.to_csv('../Dataset/dataset.csv', sep='\t')

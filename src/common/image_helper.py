@@ -38,7 +38,7 @@ def draw_contours(image_bgr, contour_thickness=7, canny_th1=40, canny_th2=20, bl
     return contoured, contours
 
 
-def get_image_bounds(image, h, w, contour_thickness=7, canny_th1=40, canny_th2=20, blurr_lens_size=50,
+def get_image_bounds(image, h, w, contour_thickness=7, canny_th1=40, canny_th2=20, blurr_lens_size=20,
                      blurr_sigma_1=200,
                      blurr_sigma_2=200):
     contoured, contours = draw_contours(image_bgr=image, contour_thickness=contour_thickness, canny_th1=canny_th1,

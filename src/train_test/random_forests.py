@@ -1,46 +1,41 @@
-# Importing Libraries
+from sklearn.metrics import precision_recall_fscore_support
+
 import pandas as pd
-from sklearn.ensemble import  RandomForestClassifier
+import numpy as np
+from sklearn.ensemble import RandomForestClassifier
 
+df = pd.read_csv('../../Dataset/dataset.csv', delimiter='\t')
 
-# Loading the data
-df = pd.read_csv("../../Dataset/dataset.csv",delimiter ='\t')
+dataset = df.values
 
+mask = np.random.rand(len(df)) < .80
 
-# Splitting the data
-X = df.ix[:,2:42]
-print X
-Y = df.ix[:,42:43]
-print Y
+train = df[mask]
+test = df[~mask]
 
-''''
-X = []
-Y = []
+X = pd.DataFrame()
+Y = pd.DataFrame()
 
-for x in df:
-    X.append(x[2:(len(x)-1)])
-    Y.append(x[len(x)-1])
+X = train.ix[:, 2:len(train.columns) - 1]
+Y = train.ix[:, len(train.columns) - 1: len(train.columns)]
 
-#print X
-print Y
-'''
+X_Test = pd.DataFrame()
+Y_Test = pd.DataFrame()
 
-# print results.head()
-# print train.head()
+X_Test = test.ix[:, 2:len(test.columns) - 1]
+Y_Test = test.ix[:, len(test.columns) - 1: len(test.columns)]
 
-# Classifier
-# max_features = sqrt(no_of_features)
-rf = RandomForestClassifier(n_estimators=100,max_features=7)
+print "Training Data Set Size : ", str(len(X))
+print "Testing Data Set Size : ", str(len(X_Test))
 
-rf.fit(X,Y)
+# tune parameters here.
+rf = RandomForestClassifier(n_estimators=100, max_features=7)
 
+rf.fit(X, Y)
+# predict
+Y_Result = rf.predict(X_Test)
 
-print rf.feature_importances_
-print rf.oob_score
-
-eval_results = rf.predict(test)
-
-df.to_csv("../../Dataset/randomforest_results.csv",sep = '\t')
+print precision_recall_fscore_support(Y_Test, Y_Result, average='micro')
 
 
 

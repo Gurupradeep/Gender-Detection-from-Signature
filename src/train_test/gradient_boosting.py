@@ -1,49 +1,39 @@
-# Importing Libraries
+from sklearn.metrics import precision_recall_fscore_support
+
 import pandas as pd
-from sklearn.ensemble import  GradientBoostingClassifier
+import numpy as np
+from sklearn.ensemble import GradientBoostingClassifier
 
+df = pd.read_csv('../../Dataset/dataset.csv', delimiter='\t')
 
-# Loading the data
-df = pd.read_csv("../../Dataset/dataset.csv",delimiter ='\t')
+dataset = df.values
 
+mask = np.random.rand(len(df)) < .80
 
-# Splitting the data
-X = df.ix[:,2:42]
-print X
-Y = df.ix[:,42:43]
-print Y
+train = df[mask]
+test = df[~mask]
 
+X = pd.DataFrame()
+Y = pd.DataFrame()
 
-# print results.head()
-# print train.head()
+X = train.ix[:, 2:len(train.columns) - 1]
+Y = train.ix[:, len(train.columns) - 1: len(train.columns)]
 
-# Classifier
-# max_features = sqrt(no_of_features)
-gb = GradientBoostingClassifier(n_estimators=100,max_features=7)
+X_Test = pd.DataFrame()
+Y_Test = pd.DataFrame()
+
+X_Test = test.ix[:, 2:len(test.columns) - 1]
+Y_Test = test.ix[:, len(test.columns) - 1: len(test.columns)]
+
+print "Training Data Set Size : ", str(len(X))
+print "Testing Data Set Size : ", str(len(X_Test))
+
+gb = GradientBoostingClassifier(n_estimators=100)
 
 gb.fit(X,Y)
 
+Y_Result = gb.predict(X_Test)
 
-print gb.feature_importances_
-print gb.oob_improvement_
-print gb.train_score_
-
-# TO BE DONE
-'''
-
-# Predicting class labels
-eval_results = gb.predict(X_test)
-
-# Score on test data (Accuracy)
-acc = gb.score(X_test,Y_test)
-print('Accuracy: %.4f' %acc)
-
-
-'''
-
-df.to_csv("../../Dataset/randomforest_results.csv",sep = '\t')
-
-
-
+print precision_recall_fscore_support(Y_Test, Y_Result, average='micro')
 
 

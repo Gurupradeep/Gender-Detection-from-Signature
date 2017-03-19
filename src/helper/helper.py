@@ -7,9 +7,6 @@ from constants.constants import Directions
 def get_external_and_internal_contours(gray_image):
     contours, hierarchy = cv2.findContours(gray_image.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     gray_image1 = invert_grayscale_image(gray_image.copy())
-    cv2.drawContours(gray_image1, contours, -1, (0, 0, 0), 1)
-    cv2.imshow('Contours', gray_image1)
-
     external_contours = []
     internal_contours = []
     # Imp: Count external and internal contours.
@@ -31,18 +28,19 @@ def get_slope_height_ratio(contours, hierarchy):
         if hierarchy[0][contour_index][3] == -1:
             continue
         else:
-            min_height = 100000
-            max_height = 0
-            min_width = 100000
-            max_width = 0
-            for ctrs in contours[contour_index]:
-                ctrs_values = ctrs[0]
-                min_height = min(min_height, ctrs_values[0])
-                max_height = max(max_height, ctrs_values[0])
-                min_width = min(min_width, ctrs_values[1])
-                max_width = max(max_width, ctrs_values[1])
-            contour_heights.append(max_height - min_height)
-            contour_widths.append(max_width - min_width)
+            if len(contours[contour_index]) > 1:
+                min_height = 100000
+                max_height = 0
+                min_width = 100000
+                max_width = 0
+                for ctrs in contours[contour_index]:
+                    ctrs_values = ctrs[0]
+                    min_height = min(min_height, ctrs_values[0])
+                    max_height = max(max_height, ctrs_values[0])
+                    min_width = min(min_width, ctrs_values[1])
+                    max_width = max(max_width, ctrs_values[1])
+                contour_heights.append(max_height - min_height)
+                contour_widths.append(max_width - min_width)
     return contour_heights, contour_widths
 
 
