@@ -16,6 +16,8 @@ for i in range(1, 4):
     for j in range(1, 9):
         columns.append(NUMBER_PIXEL_DIRECTION_ + str(i) + "_" + str(j))
 
+columns.append("Gender")
+
 df = pd.DataFrame(columns=columns)
 
 for root, dirs, filename in os.walk(input_source):
@@ -37,6 +39,8 @@ for root, dirs, filename in os.walk(input_source):
                     data.append(image_direction_pixel_feature[NUMBER_PIXEL_DIRECTION_ + str(i) + "_" + str(j)])
                 else:
                     data.append(0)
+        # add gender.
+        data.append(0)
         df.loc[len(df)] = data
         print df
         df.to_csv('../Dataset/dataset.csv', sep='\t')
