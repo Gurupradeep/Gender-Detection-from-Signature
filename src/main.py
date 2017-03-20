@@ -7,8 +7,8 @@ from helper.helper import get_external_and_internal_contours, get_slope_height_r
     image_direction_pixels
 
 
-def get_dataset_values(image_path):
-    image = cv2.imread(input_source + image_path)
+def get_dataset_values(image_path, path):
+    image = cv2.imread(path + image_path)
     image = cv2.resize(image, None, fx=0.3, fy=0.3)
     '''
         Crop The Image using canny edge detection and contour formations. Use BilateralFiltering to remove the desired noises.

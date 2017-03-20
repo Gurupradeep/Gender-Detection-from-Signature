@@ -19,7 +19,6 @@ for train, test in kf.split(X):
     rf = RandomForestClassifier(n_estimators=100, max_features=7)
     rf.fit(X_train, Y_train)
     Y_Result = rf.predict(X_test)
-    print rf.feature_importances_
     print precision_recall_fscore_support(Y_test, Y_Result, average='micro')
 
 

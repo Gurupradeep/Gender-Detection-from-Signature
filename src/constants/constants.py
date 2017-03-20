@@ -8,6 +8,8 @@ Directions = [1, 2, 3, 4, 5, 6, 7, 8]
 
 input_source = '../input/'
 
+test_source = '../../test_images/'
+
 MAX_LENGTH_DIRECTION_ = "Max_Length_Direction_"
 NUMBER_PIXEL_DIRECTION_ = "Number_Pixel_Direction_"
 SLOPE_ANGLE = "slope_angle"

@@ -2,7 +2,7 @@ import os
 
 import pandas as pd
 
-from constants.constants import MAX_LENGTH_DIRECTION_, NUMBER_PIXEL_DIRECTION_, input_source
+from constants.constants import MAX_LENGTH_DIRECTION_, NUMBER_PIXEL_DIRECTION_, test_source, input_source
 from main import get_dataset_values
 
 columns = ["Name", "Intensity_Threshold", "Ratio_Of_Black_Pixels",
@@ -16,15 +16,13 @@ for i in range(1, 4):
     for j in range(1, 9):
         columns.append(NUMBER_PIXEL_DIRECTION_ + str(i) + "_" + str(j))
 
-columns.append("Gender")
-
 df = pd.DataFrame(columns=columns)
 
-for root, dirs, filename in os.walk(input_source):
+for root, dirs, filename in os.walk(test_source):
     for f in filename:
         threshold, percentage_of_black_pixels, external_contours_number, internal_contours_number, \
         max_min_height_ratio, max_min_width_ratio, contour_mean_slope, max_length_dict, image_direction_pixel_feature, \
-        slant_angle = get_dataset_values(f, input_source)
+        slant_angle = get_dataset_values(f, test_source)
         data = []
         data.extend((f, threshold, percentage_of_black_pixels, external_contours_number, internal_contours_number,
                      max_min_height_ratio, max_min_width_ratio, contour_mean_slope, slant_angle))
@@ -39,11 +37,6 @@ for root, dirs, filename in os.walk(input_source):
                     data.append(image_direction_pixel_feature[NUMBER_PIXEL_DIRECTION_ + str(i) + "_" + str(j)])
                 else:
                     data.append(0)
-        # add gender.
-        if "boy" in f:
-            data.append(0)
-        else:
-            data.append(1)
         df.loc[len(df)] = data
         print df
-        df.to_csv('../Dataset/dataset.csv', sep='\t')
+        df.to_csv('../../Dataset/test.csv', sep='\t')
