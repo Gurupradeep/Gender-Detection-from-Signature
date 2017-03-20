@@ -2,14 +2,16 @@ import cv2
 import matplotlib.pyplot as plt
 from common.image_helper import get_image_bounds, invert_grayscale_image, get_max_length_dir, get_direction_count
 from constants.constants import THRESHOLD, MAX_VALUE, MIN_VALUE, MAX_LENGTH_DIRECTION_, NUMBER_PIXEL_DIRECTION_, \
-    SLOPE_ANGLE, input_source
+    SLOPE_ANGLE, input_source, WIDTH, HEIGHT
 from helper.helper import get_external_and_internal_contours, get_slope_height_ratio, get_max_length_direction, \
     image_direction_pixels
 
 
 def get_dataset_values(image_path, path):
     image = cv2.imread(path + image_path)
-    image = cv2.resize(image, None, fx=0.3, fy=0.3)
+    width = image.shape[1]
+    height = image.shape[0]
+    image = cv2.resize(image, None, fx=WIDTH*1.0/width, fy=HEIGHT*1.0/height)
     '''
         Crop The Image using canny edge detection and contour formations. Use BilateralFiltering to remove the desired noises.
     '''
@@ -32,10 +34,20 @@ def get_dataset_values(image_path, path):
     x_values_all = x.keys()
     x_values = []
     y_values = []
+    number_of_pixels_to_be_considered = 0
     for x_value in x_values_all:
-        if x_value <= 220:
+        if x_value <= THRESHOLD:
             x_values.append(x_value)
             y_values.append(x[x_value])
+            number_of_pixels_to_be_considered += x[x_value]
+
+    threshold = THRESHOLD
+    number_of_pixels_till_threshold = 0
+    for x_value in x_values:
+        if number_of_pixels_till_threshold >= 0.75*number_of_pixels_to_be_considered:
+            threshold = x_value - 1
+            break
+        number_of_pixels_till_threshold += x[x_value]
 
     '''
         Draw histogram of the intensity vs count of pixels.
@@ -56,7 +68,7 @@ def get_dataset_values(image_path, path):
     number_of_black_pixel = 0
     for w in range(gray_image.shape[1]):
         for h in range(gray_image.shape[0]):
-            if gray_image[h][w] > THRESHOLD:
+            if gray_image[h][w] > threshold:
                 gray_image[h][w] = MAX_VALUE
             else:
                 gray_image[h][w] = MIN_VALUE
@@ -160,6 +172,6 @@ def get_dataset_values(image_path, path):
     cv2.waitKey(0)
     cv2.destroyAllWindows()
     '''
-    return THRESHOLD, percentage_of_black_pixels, external_contours_number, internal_contours_number, \
+    return threshold, percentage_of_black_pixels, external_contours_number, internal_contours_number, \
            max_min_height_ratio, max_min_width_ratio, contour_mean_slope, max_length_dict, image_direction_pixel_feature, \
            slant_angle

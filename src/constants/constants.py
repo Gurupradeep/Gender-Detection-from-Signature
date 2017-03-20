@@ -5,6 +5,8 @@ MAX_VALUE = 255
 MIN_VALUE = 0
 Directions = [1, 2, 3, 4, 5, 6, 7, 8]
 
+WIDTH = 300
+HEIGHT = 400
 
 input_source = '../input/'
 
