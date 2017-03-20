@@ -28,7 +28,7 @@ Y_Test = test.ix[:, len(test.columns) - 1: len(test.columns)]
 print "Training Data Set Size : ", str(len(X))
 print "Testing Data Set Size : ", str(len(X_Test))
 
-gb = GradientBoostingClassifier(n_estimators=100)
+gb = GradientBoostingClassifier(n_estimators=250)
 
 gb.fit(X,Y)
 

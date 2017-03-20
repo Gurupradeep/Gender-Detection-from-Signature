@@ -37,3 +37,4 @@ Y_Result = clf.predict(X_Test)
 
 print precision_recall_fscore_support(Y_Test, Y_Result, average='micro')
 print clf.loss_
+print clf.intercepts_
