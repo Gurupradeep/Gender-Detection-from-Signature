@@ -8,9 +8,9 @@ df = pd.read_csv("../../Dataset/dataset.csv",delimiter ='\t')
 
 
 # Splitting the data
-X = df.ix[:,2:42]
+X = df.ix[:, 3:42]
 print X
-Y = df.ix[:,42:43]
+Y = df.ix[:, 42:43]
 print Y
 
 svm = SVC(gamma=0.001)

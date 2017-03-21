@@ -4,7 +4,6 @@ import pandas as pd
 from sklearn.model_selection import KFold
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, AdaBoostClassifier
 from sklearn.neural_network import MLPClassifier
-from sklearn.tree import DecisionTreeClassifier
 from sklearn.preprocessing import MinMaxScaler, normalize
 
 
@@ -25,7 +24,7 @@ average_accuracy = 0
 
 for train, test in kf.split(X):
     X_train, X_test, Y_train, Y_test = X[train], X[test], Y.loc[train], Y.loc[test]
-    rf = RandomForestClassifier(n_estimators=250, max_features=7, max_depth=3)
+    rf = RandomForestClassifier(n_estimators=250, max_features=7)
     rf.fit(X_train, Y_train)
     Y_Result = rf.predict(X_test)
     prf = precision_recall_fscore_support(Y_test, Y_Result, average='binary')
