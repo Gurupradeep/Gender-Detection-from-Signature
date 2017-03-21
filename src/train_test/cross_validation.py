@@ -3,8 +3,9 @@ from sklearn.metrics import precision_recall_fscore_support
 import pandas as pd
 from sklearn.model_selection import KFold
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, AdaBoostClassifier
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.neural_network import MLPClassifier
-from sklearn.preprocessing import MinMaxScaler, normalize
+from sklearn.preprocessing import normalize
 
 
 df = pd.read_csv('../../Dataset/dataset.csv', delimiter='\t')
@@ -24,7 +25,7 @@ average_accuracy = 0
 
 for train, test in kf.split(X):
     X_train, X_test, Y_train, Y_test = X[train], X[test], Y.loc[train], Y.loc[test]
-    rf = RandomForestClassifier(n_estimators=250, max_features=7)
+    rf = RandomForestClassifier(n_estimators=150, max_features=7, max_depth=1)
     rf.fit(X_train, Y_train)
     Y_Result = rf.predict(X_test)
     prf = precision_recall_fscore_support(Y_test, Y_Result, average='binary')
@@ -55,7 +56,21 @@ for train, test in kf.split(X):
     average_accuracy += prf[2]
 
 average_accuracy /= k
-print "Average Accuracy Adaptive Boosting = ", str(average_accuracy)
+print "Average Accuracy Adaptive Boosting (with Gradient Boosting) = ", str(average_accuracy)
+
+
+average_accuracy = 0
+for train, test in kf.split(X):
+    X_train, X_test, Y_train, Y_test = X[train], X[test], Y.loc[train], Y.loc[test]
+    bdt = AdaBoostClassifier(DecisionTreeClassifier(max_depth=3), n_estimators=250)
+    bdt.fit(X_train, Y_train)
+    Y_Result = bdt.predict(X_test)
+    prf = precision_recall_fscore_support(Y_test, Y_Result, average='micro')
+    average_accuracy += prf[2]
+
+average_accuracy /= k
+print "Average Accuracy Adaptive Boosting (With Decision Trees) = ", str(average_accuracy)
+
 
 average_accuracy = 0
 for train, test in kf.split(X):
